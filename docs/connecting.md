@@ -6,8 +6,21 @@
 `docker` CLI does:
 
 1. `DOCKER_HOST`, or `DOCKER_URL`
-2. `unix:///var/run/docker.sock` on Linux and macOS
-3. `npipe:////./pipe/docker_engine` on Windows
+2. the active Docker context — `DOCKER_CONTEXT`, then `currentContext` from
+   `~/.docker/config.json`
+3. `unix:///var/run/docker.sock` on Linux and macOS
+4. `npipe:////./pipe/docker_engine` on Windows
+
+`docker context use` exports nothing; it writes `currentContext` into
+`config.json`. Reading only `DOCKER_HOST` therefore disagrees with the CLI on
+the same machine, and falls back to `/var/run/docker.sock` — which Docker
+Desktop symlinks but Colima, Rancher Desktop, rootless Docker and Podman
+generally do not. Set `DOCKER_CONFIG` to point the lookup somewhere else.
+
+A context may carry its own TLS material, which is picked up with it. An
+unreadable store, a malformed `meta.json` or a context that no longer exists
+all mean "no context" rather than an error, because falling back to the
+platform default is what the CLI does.
 
 TLS material comes from `DOCKER_CERT_PATH`, which is expected to contain
 `ca.pem`, `cert.pem` and `key.pem`. `DOCKER_TLS_VERIFY` is a presence flag

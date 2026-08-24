@@ -47,6 +47,7 @@ module Docker
     require_relative "api/session"
     require_relative "api/stream"
     require_relative "api/connection"
+    require_relative "api/context"
     require_relative "api/config"
     require_relative "api/auth"
     require_relative "api/operations"

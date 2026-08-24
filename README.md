@@ -39,9 +39,11 @@ Requires Ruby 3.1 or newer and a daemon speaking Engine API v1.41 or newer
 
 ## Connecting
 
-With no arguments, a client resolves its daemon exactly as the `docker` CLI
-does: `DOCKER_HOST`, then `DOCKER_CERT_PATH` and `DOCKER_TLS_VERIFY` for TLS,
-falling back to the platform's default socket.
+With no arguments, a client resolves its daemon the way the `docker` CLI does:
+`DOCKER_HOST`, then the active Docker context (`DOCKER_CONTEXT`, then
+`currentContext` in `~/.docker/config.json`), falling back to the platform's
+default socket. TLS material comes from `DOCKER_CERT_PATH` and
+`DOCKER_TLS_VERIFY`, or from the context itself.
 
 ```ruby
 client = Docker::API::Client.new

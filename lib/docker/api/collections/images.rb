@@ -177,6 +177,18 @@ module Docker
         raise ArgumentError, "build needs a context: or a dockerfile:" if context.nil?
         return [context, dockerfile] unless context.is_a?(String) && File.directory?(context)
 
+        # dockerfile: means two different things depending on whether there is
+        # a context, and getting them the wrong way round is silent: the whole
+        # Dockerfile source goes out as the `dockerfile=` query parameter, and
+        # the daemon simply reports that it cannot find that file. A newline is
+        # the tell -- a filename inside a build context does not contain one.
+        if dockerfile.is_a?(String) && dockerfile.include?("\n")
+          raise ArgumentError,
+            "dockerfile: names a file inside context: -- it looks like you passed the file's " \
+            "contents. Drop context: to build from a Dockerfile given inline, or pass the name " \
+            "of a Dockerfile within #{context.inspect}."
+        end
+
         [Tar.pack_directory(context), dockerfile]
       end
     end

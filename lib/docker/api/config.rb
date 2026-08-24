@@ -71,8 +71,31 @@ module Docker
             "from_env({ #{stray.first.inspect} => ... }). Got #{stray.inspect} as options."
         end
 
-        url = overrides[:url] || env["DOCKER_HOST"] || env["DOCKER_URL"] || default_url
-        tls = overrides.key?(:tls) ? overrides[:tls] : tls_from_env(env)
+        # Resolution order, matching the CLI: an explicit argument, then
+        # DOCKER_HOST, then the active context, then the platform default.
+        #
+        # `docker context use` exports nothing -- it writes currentContext into
+        # config.json -- so a client that skips the store disagrees with the
+        # CLI on the same machine and falls back to /var/run/docker.sock, which
+        # Colima, Rancher Desktop, rootless Docker and Podman generally do not
+        # create. The store is only consulted when nothing more explicit has
+        # already answered, so this cannot change what an existing caller resolves.
+        context = if overrides[:url].nil? && blank?(env["DOCKER_HOST"]) && blank?(env["DOCKER_URL"])
+                    Context.resolve(env)
+                  end
+
+        # presence, not a bare ||: an exported-but-empty DOCKER_HOST is truthy
+        # in Ruby, so it would beat the context and then resolve to the default
+        # socket anyway. The CLI treats an empty value as unset.
+        url = overrides[:url] || presence(env["DOCKER_HOST"]) || presence(env["DOCKER_URL"]) ||
+          context&.[](:url) || default_url
+
+        tls = if overrides.key?(:tls)
+                overrides[:tls]
+              else
+                from_env = tls_from_env(env)
+                from_env.empty? ? (context&.[](:tls) || {}) : from_env
+              end
 
         new(
           url: url,
@@ -87,6 +110,20 @@ module Docker
       def self.default_url
         windows? ? DEFAULT_WINDOWS_PIPE : DEFAULT_UNIX_SOCKET
       end
+
+      # @return [Boolean]
+      # @api private
+      def self.blank?(value)
+        value.nil? || value.empty?
+      end
+      private_class_method :blank?
+
+      # @return [String, nil] the value, or nil when it is absent or empty
+      # @api private
+      def self.presence(value)
+        blank?(value) ? nil : value
+      end
+      private_class_method :presence
 
       # @return [Boolean]
       def self.windows?
