@@ -1,0 +1,123 @@
+# GENERATED -- do not edit.
+#
+# Source:     data/swagger/v1.55.yaml (Docker Engine API v1.55)
+# Generator:  tools/generator/rbs_emitter.rb
+# Regenerate: bundle exec rake api:generate
+
+module Docker
+  module API
+    class Operations
+      attr_reader connection: Docker::API::Connection
+      def initialize: (Docker::API::Connection connection) -> void
+
+      def config_create: (?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def config_delete: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def config_inspect: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def config_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def config_update: (id: String, version: Integer, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def container_archive: (id: String, path: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_archive_info: (id: String, path: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_attach: (id: String, ?detach_keys: String?, ?logs: bool?, ?stream: bool?, ?stdin: bool?, ?stdout: bool?, ?stderr: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def container_attach_websocket: (id: String, ?detach_keys: String?, ?logs: bool?, ?stream: bool?, ?stdin: bool?, ?stdout: bool?, ?stderr: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def container_changes: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_create: (body: Hash[String, untyped] | String | IO, ?name: String?, ?platform: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_delete: (id: String, ?v: bool?, ?force: bool?, ?link: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def container_export: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_inspect: (id: String, ?size: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def container_kill: (id: String, ?signal: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_list: (?all: bool?, ?limit: Integer?, ?size: bool?, ?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_logs: (id: String, ?follow: bool?, ?stdout: bool?, ?stderr: bool?, ?since: Integer?, ?until_: Integer?, ?timestamps: bool?, ?tail: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_pause: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_prune: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_rename: (id: String, name: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_resize: (id: String, h: Integer, w: Integer) ?{ (String) -> void } -> Docker::API::Response
+      def container_restart: (id: String, ?signal: String?, ?t: Integer?) ?{ (String) -> void } -> Docker::API::Response
+      def container_start: (id: String, ?detach_keys: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_stats: (id: String, ?stream: bool?, ?one_shot: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def container_stop: (id: String, ?signal: String?, ?t: Integer?) ?{ (String) -> void } -> Docker::API::Response
+      def container_top: (id: String, ?ps_args: String?) ?{ (String) -> void } -> Docker::API::Response
+      def container_unpause: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_update: (id: String, body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def container_wait: (id: String, ?condition: String?) ?{ (String) -> void } -> Docker::API::Response
+      def put_container_archive: (id: String, path: String, body: Hash[String, untyped] | String | IO, ?no_overwrite_dir_non_dir: String?, ?copy_uidgid: String?) ?{ (String) -> void } -> Docker::API::Response
+      def distribution_inspect: (name: String) ?{ (String) -> void } -> Docker::API::Response
+      def container_exec: (id: String, body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def exec_inspect: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def exec_resize: (id: String, h: Integer, w: Integer) ?{ (String) -> void } -> Docker::API::Response
+      def exec_start: (id: String, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def build_prune: (?reserved_space: Integer?, ?max_used_space: Integer?, ?min_free_space: Integer?, ?all: bool?, ?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def image_attestations: (name: String, ?platform: Array[untyped]?, ?type: Array[untyped]?, ?statement: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def image_build: (?dockerfile: String?, ?t: String?, ?extrahosts: String?, ?remote: String?, ?q: bool?, ?nocache: bool?, ?cachefrom: String?, ?pull: String?, ?rm: bool?, ?forcerm: bool?, ?memory: Integer?, ?memswap: Integer?, ?cpushares: Integer?, ?cpusetcpus: String?, ?cpuperiod: Integer?, ?cpuquota: Integer?, ?buildargs: String?, ?shmsize: Integer?, ?squash: bool?, ?labels: String?, ?networkmode: String?, ?platform: String?, ?target: String?, ?outputs: String?, ?version: String?, ?content_type: String?, ?x_registry_config: String?, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def image_commit: (?container: String?, ?repo: String?, ?tag: String?, ?comment: String?, ?author: String?, ?pause: bool?, ?changes: String?, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def image_create: (?from_image: String?, ?from_src: String?, ?repo: String?, ?tag: String?, ?message: String?, ?changes: Array[untyped]?, ?platform: String?, ?x_registry_auth: String?, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def image_delete: (name: String, ?force: bool?, ?noprune: bool?, ?platforms: Array[untyped]?) ?{ (String) -> void } -> Docker::API::Response
+      def image_get: (name: String, ?platform: Array[untyped]?) ?{ (String) -> void } -> Docker::API::Response
+      def image_get_all: (?names: Array[untyped]?, ?platform: Array[untyped]?) ?{ (String) -> void } -> Docker::API::Response
+      def image_history: (name: String, ?platform: String?) ?{ (String) -> void } -> Docker::API::Response
+      def image_inspect: (name: String, ?manifests: bool?, ?platform: String?) ?{ (String) -> void } -> Docker::API::Response
+      def image_list: (?all: bool?, ?filters: String?, ?shared_size: bool?, ?digests: bool?, ?manifests: bool?, ?identity: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def image_load: (?quiet: bool?, ?platform: Array[untyped]?, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def image_prune: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def image_push: (name: String, x_registry_auth: String, ?tag: String?, ?platform: String?) ?{ (String) -> void } -> Docker::API::Response
+      def image_search: (term: String, ?limit: Integer?, ?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def image_tag: (name: String, ?repo: String?, ?tag: String?) ?{ (String) -> void } -> Docker::API::Response
+      def network_connect: (id: String, body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def network_create: (body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def network_delete: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def network_disconnect: (id: String, body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def network_inspect: (id: String, ?verbose: bool?, ?scope: String?) ?{ (String) -> void } -> Docker::API::Response
+      def network_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def network_prune: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def node_delete: (id: String, ?force: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def node_inspect: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def node_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def node_update: (id: String, version: Integer, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def get_plugin_privileges: (remote: String) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_create: (name: String, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_delete: (name: String, ?force: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_disable: (name: String, ?force: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_enable: (name: String, ?timeout: Integer?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_inspect: (name: String) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_pull: (remote: String, ?name: String?, ?x_registry_auth: String?, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_push: (name: String) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_set: (name: String, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def plugin_upgrade: (name: String, remote: String, ?x_registry_auth: String?, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def secret_create: (?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def secret_delete: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def secret_inspect: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def secret_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def secret_update: (id: String, version: Integer, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def service_create: (body: Hash[String, untyped] | String | IO, ?x_registry_auth: String?) ?{ (String) -> void } -> Docker::API::Response
+      def service_delete: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def service_inspect: (id: String, ?insert_defaults: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def service_list: (?filters: String?, ?status: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def service_logs: (id: String, ?details: bool?, ?follow: bool?, ?stdout: bool?, ?stderr: bool?, ?since: Integer?, ?timestamps: bool?, ?tail: String?) ?{ (String) -> void } -> Docker::API::Response
+      def service_update: (id: String, body: Hash[String, untyped] | String | IO, version: Integer, ?registry_auth_from: String?, ?rollback: String?, ?x_registry_auth: String?) ?{ (String) -> void } -> Docker::API::Response
+      def session: () ?{ (String) -> void } -> Docker::API::Response
+      def swarm_init: (body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def swarm_inspect: () ?{ (String) -> void } -> Docker::API::Response
+      def swarm_join: (body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def swarm_leave: (?force: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def swarm_unlock: (body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def swarm_unlockkey: () ?{ (String) -> void } -> Docker::API::Response
+      def swarm_update: (body: Hash[String, untyped] | String | IO, version: Integer, ?rotate_worker_token: bool?, ?rotate_manager_token: bool?, ?rotate_manager_unlock_key: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def system_auth: (?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+      def system_data_usage: (?type: Array[untyped]?, ?verbose: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def system_events: (?since: String?, ?until_: String?, ?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def system_info: () ?{ (String) -> void } -> Docker::API::Response
+      def system_ping: () ?{ (String) -> void } -> Docker::API::Response
+      def system_ping_head: () ?{ (String) -> void } -> Docker::API::Response
+      def system_version: () ?{ (String) -> void } -> Docker::API::Response
+      def task_inspect: (id: String) ?{ (String) -> void } -> Docker::API::Response
+      def task_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def task_logs: (id: String, ?details: bool?, ?follow: bool?, ?stdout: bool?, ?stderr: bool?, ?since: Integer?, ?timestamps: bool?, ?tail: String?) ?{ (String) -> void } -> Docker::API::Response
+      def volume_create: (body: Hash[String, untyped] | String | IO) ?{ (String) -> void } -> Docker::API::Response
+      def volume_delete: (name: String, ?force: bool?) ?{ (String) -> void } -> Docker::API::Response
+      def volume_inspect: (name: String) ?{ (String) -> void } -> Docker::API::Response
+      def volume_list: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def volume_prune: (?filters: String?) ?{ (String) -> void } -> Docker::API::Response
+      def volume_update: (name: String, version: Integer, ?body: Hash[String, untyped] | String | IO?) ?{ (String) -> void } -> Docker::API::Response
+    end
+  end
+end
