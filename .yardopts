@@ -1,0 +1,9 @@
+--markup markdown
+--no-private
+--readme README.md
+--output-dir doc
+--exclude lib/docker/api/operations.rb
+--exclude lib/docker/api/models.rb
+lib/**/*.rb
+-
+docs/*.md

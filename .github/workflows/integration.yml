@@ -1,0 +1,45 @@
+---
+name: Integration
+
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  daemon:
+    name: against a real daemon
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      # ubuntu-latest runners ship with Docker already running, so there is
+      # nothing to install -- only something to wait for.
+      - name: Wait for the daemon
+        run: timeout 60 bash -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+
+      - name: Report what we are testing against
+        run: docker version --format 'Engine {{.Server.Version}} API {{.Server.APIVersion}}'
+
+      - run: bundle exec rake integration
+        env:
+          DOCKER_API_NG_INTEGRATION: "1"
+
+      - name: Leave no test containers behind
+        if: always()
+        run: |
+          docker ps -aq --filter 'name=docker-api-ng-test' | xargs -r docker rm -f
+          docker network ls -q --filter 'name=docker-api-ng-test' | xargs -r docker network rm
+          docker volume ls -q --filter 'name=docker-api-ng-test' | xargs -r docker volume rm

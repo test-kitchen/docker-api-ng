@@ -1,0 +1,13 @@
+---
+require:
+  - cookstyle/chefstyle
+
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  Exclude:
+    - "vendor/**/*"
+    - "spec/**/*"
+    - "tools/**/*"
+    - "lib/docker/api/operations.rb"
+    - "lib/docker/api/models.rb"
