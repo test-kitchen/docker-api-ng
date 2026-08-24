@@ -1,0 +1,12 @@
+docker-api-ng
+Copyright 2026 Tim Smith
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+This product includes a vendored copy of the Docker Engine API
+specification (data/swagger/), which is part of the Moby Project and is
+licensed under the Apache License, Version 2.0.

@@ -1,0 +1,14 @@
+/.bundle/
+/.yardoc/
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/tmp/
+/vendor/bundle/
+*.gem
+Gemfile.lock
+.DS_Store
+
+# Local agent/tooling state, not part of the project
+.claude/
