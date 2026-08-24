@@ -6,7 +6,7 @@
 module Docker
   module API
     # The gem's own version.
-    VERSION = "0.2.0"
+    VERSION = "0.3.0"
 
     # The newest Engine API version this gem vendors a specification for.
     # Requests are never made against a version above this, even when the
