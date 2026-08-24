@@ -6,14 +6,56 @@ name: Release Please
     branches: [main]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  # Publishing lives here rather than in a workflow triggered by the tag.
+  #
+  # release-please pushes its tag using the default GITHUB_TOKEN, and GitHub
+  # deliberately does not start workflow runs from events that token creates --
+  # it is how recursive runs are prevented. So a `on: push: tags` workflow never
+  # fires for a release-please tag, which is why v0.2.0 and v0.3.0 were both
+  # tagged and released and neither reached RubyGems.
+  #
+  # Running in the same workflow sidesteps the token entirely: this job is
+  # gated on the step output rather than on an event.
+  publish:
+    name: push to rubygems
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    environment: rubygems
+    permissions:
+      contents: read
+      # Trusted publishing: RubyGems verifies this OIDC token instead of an
+      # API key, so there is no secret to store or rotate.
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Verify before publishing
+        run: bundle exec rake
+
+      - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
