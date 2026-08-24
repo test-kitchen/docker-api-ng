@@ -64,11 +64,18 @@ describe "containers on a real daemon" do
     )
     @container.start
     @container.archive_in(
-      Docker::API::Tar.pack_dockerfile("unused", files: { "note.txt" => "round trip" }).read,
+      Docker::API::Tar.pack_dockerfile("unused", files: { "note.txt" => "round trip" }),
       path: "/tmp"
     )
 
-    _(@container.exec(["cat", "/tmp/note.txt"]).stdout).must_equal "round trip"
+    result = @container.exec(["cat", "/tmp/note.txt"])
+
+    # Extraction happens inside the daemon and reports success by status alone,
+    # so a failure here otherwise reads as an empty string with no explanation.
+    # Listing the directory turns "expected round trip, got nothing" into
+    # something that says which half went wrong.
+    listing = @container.exec(["ls", "-la", "/tmp"]).output
+    _(result.stdout).must_equal("round trip", "cat said #{result.output.inspect}; /tmp holds:\n#{listing}")
   end
 
   it "collects logs" do

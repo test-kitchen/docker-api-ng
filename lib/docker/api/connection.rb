@@ -193,14 +193,26 @@ module Docker
         "#{prefix}#{path}#{Query.encode(query)}"
       end
 
+      # Encode a body and work out what to call it.
+      #
+      # Every raw body in this API is an archive: a build context, a container
+      # filesystem, an image tarball. Structured bodies are JSON. There is no
+      # third case, so a body-bearing request never goes out unlabelled.
+      #
+      # That matters more than it looks. The daemon rejects the wrong content
+      # type on its archive endpoints -- docker-api carries a middleware that
+      # retries after parsing "Content-Type: application/json is not
+      # supported. Should be application/x-tar" out of an error body -- and an
+      # absent type is at the mercy of whatever the HTTP layer decides to
+      # guess.
+      #
       # @param body [Object]
       # @return [Array(String, IO, nil, String, nil)] the payload and its content type
       def encode_body(body)
         case body
         when nil then [nil, nil]
         when Hash, Array then [JSON.generate(body), "application/json"]
-        when IO, StringIO then [body, "application/x-tar"]
-        else [body.to_s, nil]
+        else [body, "application/x-tar"]
         end
       end
 

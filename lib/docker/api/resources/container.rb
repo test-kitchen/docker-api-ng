@@ -249,7 +249,7 @@ module Docker
 
       # Copy a tar archive into the container.
       #
-      # @param archive [String, IO] tar bytes, or something that reads them
+      # @param archive [String, IO] tar bytes, or an IO that yields them
       # @param path [String] the destination directory inside the container
       # @param overwrite_non_directory [Boolean] allow replacing a file with a
       #   directory, or the reverse
@@ -257,7 +257,11 @@ module Docker
       # @return [self]
       def archive_in(archive, path:, overwrite_non_directory: true, copy_uid_gid: false)
         operations.put_container_archive(
-          id: id, path: path, body: archive,
+          id: id, path: path,
+          # The content type is not a parameter this endpoint declares, so it
+          # is not a keyword the generated layer accepts; the connection
+          # labels raw bodies as archives, which is what this one is.
+          body: archive.respond_to?(:read) ? archive.read : archive,
           no_overwrite_dir_non_dir: !overwrite_non_directory,
           copy_uidgid: copy_uid_gid
         )
