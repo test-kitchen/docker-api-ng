@@ -33,7 +33,12 @@ module Generator
 
     # @return [String] Ruby source for a minitest suite
     def render
-      lines = [header, "", "require \"spec_helper\"", ""]
+      # The harness reads request bytes back through CGI.unescape. Requiring it
+      # here rather than relying on spec_helper's transitive load keeps the
+      # generated suite standing on its own -- `cgi` is on the same path out of
+      # the default gems that `base64` already took, and an implicit load is
+      # exactly the dependency that breaks without warning when it moves.
+      lines = [header, "", "require \"cgi\"", "require \"spec_helper\"", ""]
       lines << "describe \"generated operations\" do"
       lines << harness
       @operations.each { |operation| lines << render_test(operation) }
