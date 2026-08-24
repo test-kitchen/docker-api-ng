@@ -261,15 +261,28 @@ module Docker
         raise ConnectionError.new("#{transport} failed mid-request: #{e.class}: #{e.message}")
       end
 
+      # Streamed by capability rather than by class.
+      #
+      # `IO, StringIO` looked exhaustive and is not: Tempfile is a delegator
+      # around File, so `Tempfile.new.is_a?(IO)` is false. A build context
+      # packed to a temporary file would have fallen through to `body = payload`
+      # and been sent as the delegator's to_s -- a string like
+      # `#<Tempfile:...>` where the daemon expected a tar. What Net::HTTP
+      # actually needs from a body stream is `read`, so that is what is asked
+      # for.
+      #
       # @return [void]
       def attach_payload(request, payload)
         case payload
         when nil then nil
-        when IO, StringIO
-          request.body_stream = payload
-          request["Transfer-Encoding"] = "chunked"
+        when String then request.body = payload
         else
-          request.body = payload
+          if payload.respond_to?(:read)
+            request.body_stream = payload
+            request["Transfer-Encoding"] = "chunked"
+          else
+            request.body = payload
+          end
         end
       end
 

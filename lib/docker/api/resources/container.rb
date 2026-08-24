@@ -254,7 +254,7 @@ module Docker
 
       # Copy a tar archive into the container.
       #
-      # @param archive [String, IO] tar bytes, or an IO that yields them
+      # @param archive [String, IO] tar bytes, or an IO to stream from
       # @param path [String] the destination directory inside the container
       # @param overwrite_non_directory [Boolean] allow replacing a file with a
       #   directory, or the reverse
@@ -266,7 +266,12 @@ module Docker
           # The content type is not a parameter this endpoint declares, so it
           # is not a keyword the generated layer accepts; the connection
           # labels raw bodies as archives, which is what this one is.
-          body: archive.respond_to?(:read) ? archive.read : archive,
+          #
+          # An IO is handed over as it stands rather than read into a String.
+          # Slurping defeated the point of accepting one: a container
+          # filesystem is exactly the kind of archive nobody wants resident in
+          # memory, and the connection streams a readable body chunked.
+          body: archive,
           no_overwrite_dir_non_dir: !overwrite_non_directory,
           copy_uidgid: copy_uid_gid
         )
