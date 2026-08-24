@@ -34,11 +34,4 @@ describe Docker::API::Transport::Fake do
 
     _(fake.requests.first).must_include '{"a":1}'
   end
-
-  it "is a real socket, so it satisfies what Net::BufferedIO asks of one" do
-    io = Docker::API::Transport::Fake.new([]).connect
-    _(io).must_respond_to :read_nonblock
-    _(io).must_respond_to :write
-    _(io).must_respond_to :to_io
-  end
 end

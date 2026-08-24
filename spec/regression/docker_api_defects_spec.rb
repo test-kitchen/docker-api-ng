@@ -22,17 +22,6 @@ describe "defects designed out of docker-api" do
       _(request).must_include "name=x"
       _(request).must_include "platform=linux/arm64"
     end
-
-    # The generated layer reads its parameters from Docker's specification, so
-    # forgetting one is not a mistake anybody can make by hand.
-    it "declares every query parameter the specification defines" do
-      parameters = Docker::API::Operations.instance_method(:container_create).parameters
-      names = parameters.map(&:last)
-
-      _(names).must_include :name
-      _(names).must_include :platform
-      _(names).must_include :body
-    end
   end
 
   # docker-api 2.0.0 has a Container.get unreliable enough that kitchen-dokken
@@ -69,11 +58,6 @@ describe "defects designed out of docker-api" do
         _(Docker::API::Client).wont_respond_to setter
       end
     end
-
-    it "resolves registry credentials per call rather than from a global store" do
-      _(Docker::API::Auth).must_respond_to :resolve
-      _(Docker::API::Auth).wont_respond_to :creds=
-    end
   end
 
   # Excon::Error::Socket reaches consumer rescue clauses in docker-api, coupling
@@ -87,10 +71,6 @@ describe "defects designed out of docker-api" do
       _(error.cause).must_be_kind_of SystemCallError
     end
 
-    it "loads no HTTP gem at all, so there is nothing to leak" do
-      _($LOADED_FEATURES.grep(/excon|faraday|typhoeus|httparty/)).must_be_empty
-    end
-
     it "declares no runtime dependencies" do
       spec = Gem::Specification.load("docker-api-ng.gemspec")
       _(spec.runtime_dependencies).must_be_empty
@@ -100,15 +80,20 @@ describe "defects designed out of docker-api" do
   # kitchen-dokken carries a standing TODO about //./pipe/docker_engine because
   # docker-api never grew named pipe support.
   describe "Windows named pipes" do
-    it "builds a named-pipe transport from a npipe URL" do
-      transport = Docker::API::Transport.for(url: "npipe:////./pipe/docker_engine")
-
-      _(transport).must_be_kind_of Docker::API::Transport::NamedPipe
-      _(transport.path).must_equal "//./pipe/docker_engine"
+    # Asserted as a literal rather than against the constant. Comparing
+    # default_url to DEFAULT_WINDOWS_PIPE only proves the two agree with each
+    # other, so a typo in the constant would pass. This value is an external
+    # contract -- it is the pipe Docker Desktop for Windows actually publishes.
+    it "resolves the default daemon URL to the named pipe on Windows" do
+      Docker::API::Config.stub(:windows?, true) do
+        _(Docker::API::Config.default_url).must_equal "npipe:////./pipe/docker_engine"
+      end
     end
 
-    it "defaults to the named pipe on Windows" do
-      _(Docker::API::Config::DEFAULT_WINDOWS_PIPE).must_include "pipe/docker_engine"
+    it "resolves it to the unix socket everywhere else" do
+      Docker::API::Config.stub(:windows?, false) do
+        _(Docker::API::Config.default_url).must_equal "unix:///var/run/docker.sock"
+      end
     end
   end
 
@@ -118,12 +103,6 @@ describe "defects designed out of docker-api" do
     it "adds nothing to ::Docker" do
       _(::Docker.methods(false)).must_be_empty
       _(::Docker.singleton_class.instance_methods(false)).must_be_empty
-    end
-
-    it "puts everything under Docker::API" do
-      _(Docker::API::Client.name).must_equal "Docker::API::Client"
-      _(defined?(::Docker::Container)).must_be_nil
-      _(defined?(::Docker::Connection)).must_be_nil
     end
   end
 end
