@@ -36,5 +36,27 @@ Mocha.configure do |c|
   c.stubbing_non_existent_method = :prevent
 end
 
+# Make "no reads of the real home directory" true rather than aspirational.
+#
+# Auth.resolve falls back to Dir.home when no config_path is given, and
+# Images#pull calls it on every pull with no auth: argument. On a machine that
+# has run `docker login` -- every developer's, and any CI runner with a
+# registry configured -- that reads the real ~/.docker/config.json, shells out
+# to the configured credential helper, and puts a live registry token into the
+# request bytes. Transport::Fake records those bytes, and minitest prints them
+# on failure, so a routine assertion diff can publish a working credential to a
+# terminal or a CI log.
+#
+# Dir.home reads HOME, or USERPROFILE on Windows. Pointing both somewhere empty
+# for the duration of the suite makes the fallback find nothing, which is what
+# every unit test here already assumes it does.
+require "tmpdir"
+require "fileutils"
+
+HERMETIC_HOME = Dir.mktmpdir("docker-api-ng-hermetic-home")
+ENV["HOME"] = HERMETIC_HOME
+ENV["USERPROFILE"] = HERMETIC_HOME
+Minitest.after_run { FileUtils.remove_entry(HERMETIC_HOME, true) }
+
 require "docker/api"
 require_relative "support/http_fixtures"
