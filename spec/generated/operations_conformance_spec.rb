@@ -9,6 +9,7 @@
 # One test per operation, asserting the verb, the path template and that
 # every parameter the specification defines actually reaches the wire.
 
+require "cgi"
 require "spec_helper"
 
 describe "generated operations" do
