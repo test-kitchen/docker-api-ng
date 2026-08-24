@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = "docker-api-ng"
   spec.version       = Docker::API::VERSION
   spec.authors       = ["Tim Smith"]
-  spec.email         = ["tim@mondoo.com"]
+  spec.email         = ["tsmith84@proton.me"]
   spec.summary       = "A Ruby client for the modern Docker Engine API"
   spec.description   = <<~DESC
     A dependency-free Ruby client for the Docker Engine API. The complete API
