@@ -11,7 +11,7 @@ module Docker
       # @return [Array<Docker::API::Network>] partial resources
       def all(filters: nil)
         operations.network_list(filters: filters)
-          .json.map { |payload| Network.new(client: client, raw: payload, partial: true) }
+          .json!.map { |payload| Network.new(client: client, raw: payload, partial: true) }
       end
 
       # @param id [String] a name or id
@@ -51,7 +51,7 @@ module Docker
           "Labels" => labels, "IPAM" => ipam, "Options" => options
         ).compact
 
-        get(operations.network_create(body: body).json["Id"])
+        get(operations.network_create(body: body).json!["Id"])
       end
 
       # Fetch a network by name, creating it if it does not exist.

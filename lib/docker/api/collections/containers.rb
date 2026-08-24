@@ -21,7 +21,7 @@ module Docker
       #   that need detail the list did not carry will fetch it
       def all(all: false, limit: nil, size: false, filters: nil)
         operations.container_list(all: all, limit: limit, size: size, filters: filters)
-          .json.map { |payload| Container.new(client: client, raw: payload, partial: true) }
+          .json!.map { |payload| Container.new(client: client, raw: payload, partial: true) }
       end
 
       # Fetch one container.
@@ -63,7 +63,7 @@ module Docker
         response = operations.container_create(
           body: Body.build(attributes), name: name, platform: platform
         )
-        get(response.json["Id"])
+        get(response.json!["Id"])
       end
 
       # Remove stopped containers.

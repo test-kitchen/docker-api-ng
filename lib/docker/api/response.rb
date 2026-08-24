@@ -51,6 +51,32 @@ module Docker
                 end
       end
 
+      # The body parsed as JSON, when a document is required rather than
+      # merely hoped for.
+      #
+      # {#json} answers nil for an empty body, which is right: 204 and 304 are
+      # ordinary Docker answers and carry nothing. But most callers immediately
+      # index the result -- `.json["Id"]`, `.json["StatusCode"]` -- and against
+      # an empty body that is `NoMethodError: undefined method '[]' for nil`, a
+      # bare Ruby error escaping the hierarchy this gem promises is the only
+      # thing a caller has to rescue.
+      #
+      # Reaching this means a daemon, proxy or API-compatible shim answered a
+      # documented-success status with no body, so name that rather than
+      # letting a nil propagate to whichever accessor touches it first.
+      #
+      # @return [Hash, Array] the parsed body
+      # @raise [Docker::API::StreamError] if the body was empty or unparseable
+      def json!
+        parsed = json
+        return parsed unless parsed.nil?
+
+        raise StreamError.new(
+          "the daemon answered HTTP #{status} with an empty body, but this call needs a JSON document",
+          status: status, response: self
+        )
+      end
+
       # @return [Boolean] whether the status is in the 2xx range
       def success?
         (200..299).cover?(status)

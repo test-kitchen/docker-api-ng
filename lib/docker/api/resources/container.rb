@@ -147,7 +147,7 @@ module Docker
       # @param condition [String, nil] "not-running", "next-exit" or "removed"
       # @return [Integer] the container's exit code
       def wait(condition: nil)
-        operations.container_wait(id: id, condition: condition).json["StatusCode"]
+        operations.container_wait(id: id, condition: condition).json!["StatusCode"]
       end
 
       # @param ps_args [String, nil] arguments passed to ps inside the container
@@ -232,7 +232,7 @@ module Docker
           # still being reaped, and nil.to_i is 0 -- so a command whose result
           # was not yet known reported success, and #success? agreed. nil
           # travels through instead, and #success? is false for it.
-          exit_code: operations.exec_inspect(id: exec_id).json["ExitCode"]
+          exit_code: operations.exec_inspect(id: exec_id).json!["ExitCode"]
         )
       end
 
@@ -298,7 +298,7 @@ module Docker
           container: id, repo: repo, tag: tag, comment: comment,
           author: author, pause: pause
         )
-        client.images.get(response.json["Id"])
+        client.images.get(response.json!["Id"])
       end
 
       private
@@ -337,7 +337,7 @@ module Docker
         body["User"] = user if user
         body["WorkingDir"] = working_dir if working_dir
 
-        operations.container_exec(id: id, body: body).json["Id"]
+        operations.container_exec(id: id, body: body).json!["Id"]
       end
 
       # @param listed [Array<Hash>]

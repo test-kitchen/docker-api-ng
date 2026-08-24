@@ -19,7 +19,7 @@ module Docker
       # @return [Array<Docker::API::Image>] partial resources
       def all(all: false, filters: nil, digests: false)
         operations.image_list(all: all, filters: filters, digests: digests)
-          .json.map { |payload| Image.new(client: client, raw: payload, partial: true) }
+          .json!.map { |payload| Image.new(client: client, raw: payload, partial: true) }
       end
 
       # Fetch one image.
@@ -147,7 +147,7 @@ module Docker
         # anything that only checks HTTP.
         raise Error.new("image build failed: #{failure}", operation: "image_build") if failure
 
-        get(tag || image_id)
+        get(built_reference(tag, image_id))
       end
 
       # Remove unused images.
@@ -169,6 +169,31 @@ module Docker
       end
 
       private
+
+      # What to inspect once a build has finished.
+      #
+      # A tag is the reliable answer. The image id only turns up if the daemon
+      # emitted an `aux.ID` event, which the classic builder does and BuildKit
+      # does not always -- so an untagged build could reach here with neither,
+      # and `get(nil)` asked the daemon for `GET /v1.55/images//json`. That
+      # comes back as a 404 about a missing image, which points at everything
+      # except the actual problem.
+      #
+      # @param tag [String, nil]
+      # @param image_id [String, nil]
+      # @return [String]
+      # @raise [Docker::API::Error]
+      def built_reference(tag, image_id)
+        reference = tag || image_id
+        return reference if reference
+
+        raise Error.new(
+          "the build succeeded but produced nothing to look up: no tag: was given and the " \
+          "daemon reported no image id. Pass tag: to name the result, which BuildKit needs " \
+          "in order to report one.",
+          operation: "image_build"
+        )
+      end
 
       # @return [Array(IO, String, nil)] the archive and the Dockerfile name
       def build_context(context, dockerfile)
