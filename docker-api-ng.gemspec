@@ -22,7 +22,6 @@ Gem::Specification.new do |spec|
     "changelog_uri" => "#{spec.homepage}/blob/main/CHANGELOG.md",
     "documentation_uri" => "#{spec.homepage}/blob/main/README.md",
     "source_code_uri" => spec.homepage,
-    "rubygems_mfa_required" => "true",
   }
 
   spec.required_ruby_version = ">= 3.1"
