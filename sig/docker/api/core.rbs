@@ -1,0 +1,109 @@
+# Hand-written signatures for the layers the generated operations depend on.
+#
+# Kept deliberately narrow: enough to type-check the generated file against the
+# connection it calls, without pinning down internals that are free to change.
+
+module Docker
+  module API
+    VERSION: String
+    MAX_API_VERSION: String
+    MIN_API_VERSION: String
+
+    class Error < StandardError
+      attr_reader operation: String?
+      attr_reader status: Integer?
+      attr_reader response: Docker::API::Response?
+
+      def initialize: (?String? message, ?operation: (String | Symbol)?, ?status: Integer?, ?response: Docker::API::Response?) -> void
+      def self.for: (status: Integer, ?operation: (String | Symbol)?, ?response: Docker::API::Response?) -> Docker::API::Error
+    end
+
+    class ConnectionError < Error
+    end
+
+    class TimeoutError < Error
+    end
+
+    class ClientError < Error
+    end
+
+    class BadRequest < ClientError
+    end
+
+    class Unauthorized < ClientError
+    end
+
+    class Forbidden < ClientError
+    end
+
+    class NotFound < ClientError
+    end
+
+    class NotModified < ClientError
+    end
+
+    class Conflict < ClientError
+    end
+
+    class ServerError < Error
+    end
+
+    class VersionUnsupported < Error
+    end
+
+    class StreamError < Error
+    end
+
+    class Response
+      attr_reader status: Integer
+      attr_reader headers: Hash[String, String]
+      attr_reader body: String
+
+      def initialize: (status: Integer, ?headers: Hash[untyped, untyped], ?body: String?) -> void
+      def json: () -> untyped
+      def success?: () -> bool
+      def []: ((String | Symbol) name) -> String?
+    end
+
+    class Connection
+      UNVERSIONED: Array[String]
+
+      def initialize: (transport: untyped, ?api_version: (String | Symbol), ?logger: untyped?, ?read_timeout: Numeric, ?open_timeout: Numeric) -> void
+      def api_version: () -> String?
+      def ping: () -> Docker::API::Response
+      def request: (
+        Symbol http_method,
+        String path,
+        ?query: Hash[untyped, untyped],
+        ?body: untyped,
+        ?headers: Hash[untyped, untyped],
+        ?expects: Array[Integer],
+        ?operation: (String | Symbol)?,
+        ?content_type: String?
+      ) ?{ (String) -> void } -> Docker::API::Response
+      def hijack: (
+        Symbol http_method,
+        String path,
+        ?query: Hash[untyped, untyped],
+        ?body: untyped,
+        ?headers: Hash[untyped, untyped],
+        ?operation: (String | Symbol)?
+      ) -> IO
+    end
+
+    module Path
+      SAFE: Regexp
+
+      def self.escape: (untyped value) -> String
+    end
+
+    module Query
+      def self.encode: (Hash[untyped, untyped]? params) -> String
+    end
+
+    module Platform
+      def self.oci: (untyped value) -> Hash[String, String]?
+      def self.string: (untyped value) -> String?
+    end
+  end
+end
