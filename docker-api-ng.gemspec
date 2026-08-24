@@ -26,10 +26,15 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.1"
 
+  # data/swagger/*.yaml is deliberately not packaged. It is a build-time input:
+  # `rake api:generate` reads it to emit lib/docker/api/operations.rb, which is
+  # committed. Nothing loads the specification at runtime, and the generator
+  # that consumes it lives in tools/, which is not shipped either -- so packaging
+  # it added 471 KB, about four fifths of the gem, that no installed copy can
+  # use. It stays in the repository, where the generator and reviewers want it.
   spec.files = %w{LICENSE NOTICE README.md docker-api-ng.gemspec} +
     Dir.glob("lib/**/*.rb") +
     Dir.glob("sig/**/*.rbs") +
-    Dir.glob("data/swagger/*.yaml") +
     Dir.glob("docs/*.md")
   spec.require_paths = ["lib"]
 
