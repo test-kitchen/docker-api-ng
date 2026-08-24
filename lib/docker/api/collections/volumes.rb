@@ -10,7 +10,7 @@ module Docker
       # @param filters [Hash, nil] daemon-side filters
       # @return [Array<Docker::API::Volume>]
       def all(filters: nil)
-        payload = operations.volume_list(filters: filters).json
+        payload = operations.volume_list(filters: filters).json!
         Array(payload["Volumes"]).map do |entry|
           Volume.new(client: client, raw: entry, partial: false)
         end
@@ -18,7 +18,7 @@ module Docker
 
       # @return [Array<String>] names of volumes the daemon could not inspect
       def warnings(filters: nil)
-        Array(operations.volume_list(filters: filters).json["Warnings"])
+        Array(operations.volume_list(filters: filters).json!["Warnings"])
       end
 
       # @param name [String] the volume's name
