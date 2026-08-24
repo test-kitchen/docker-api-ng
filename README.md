@@ -216,7 +216,7 @@ tests exercise the actual request path with no network and no daemon:
 
 ```ruby
 fake = Docker::API::Transport::Fake.new([
-  "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 28\r\n\r\n" \
+  "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 26\r\n\r\n" \
   '{"Id":"abc","Name":"/web"}',
 ])
 client = Docker::API::Client.new(transport: fake, api_version: "1.55")
