@@ -21,6 +21,7 @@ describe "loading with nothing but Ruby" do
   # unless the application asks for them.
   PERMITTED_REQUIRES = %w{
     English
+    digest
     json
     net/http
     openssl
