@@ -3,7 +3,6 @@
 # Copyright 2026 Tim Smith
 # SPDX-License-Identifier: Apache-2.0
 
-require "base64" unless defined?(Base64)
 require "English"
 
 module Docker
@@ -44,10 +43,18 @@ module Docker
       # Encode a credential hash the way the daemon expects it: base64url of a
       # JSON document, in a header.
       #
+      # Encoded with pack rather than with the base64 library, deliberately.
+      # `base64` stopped being a default gem in Ruby 3.4, so requiring it makes
+      # this a gem with a runtime dependency it does not declare -- which fails
+      # at `require` time for anyone whose bundle does not happen to carry it
+      # for another reason. `pack("m0")` is the same transform with no
+      # newlines, and tr maps the standard alphabet onto the URL-safe one the
+      # daemon expects.
+      #
       # @param credentials [Hash] with :username, :password, :serveraddress
       # @return [String]
       def encode(credentials)
-        Base64.urlsafe_encode64(JSON.generate(credentials)).delete("\n")
+        [JSON.generate(credentials)].pack("m0").tr("+/", "-_")
       end
 
       # Docker Hub is stored under a URL key rather than its hostname, and an
@@ -81,7 +88,10 @@ module Docker
         return nil if entry.nil?
 
         if entry["auth"] && !entry["auth"].empty?
-          username, _, password = Base64.decode64(entry["auth"]).partition(":")
+          # unpack1("m") is Base64.decode64: lenient, ignoring newlines and
+          # any character outside the alphabet, which is what these values
+          # arrive as when a config.json has been hand-edited or line-wrapped.
+          username, _, password = entry["auth"].unpack1("m").partition(":")
           return { username: username, password: password, serveraddress: key }
         end
 

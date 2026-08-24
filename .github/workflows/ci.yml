@@ -85,12 +85,61 @@ jobs:
       - run: bundle exec rake doc_coverage
 
   gem:
-    name: gem builds
+    name: gem installs / ruby ${{ matrix.ruby }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.1 is the floor the gemspec declares. 3.4 is where base64 and
+        # friends left the default gems, which is where a dependency the
+        # development bundle happens to supply stops resolving for consumers.
+        ruby: ["3.1", "3.4", "4.0"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Deliberately no bundler-cache: this job must not have the development
+      # bundle on its path. That superset is exactly what hid a missing
+      # runtime dependency from every other job here.
       - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
-          ruby-version: "3.4"
-          bundler-cache: true
-      - run: gem build docker-api-ng.gemspec
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Build
+        run: gem build docker-api-ng.gemspec
+
+      # Building proves the gemspec parses. It does not prove the gem is
+      # usable: spec.files may be missing a file the library requires, or lib/
+      # may require a gem nothing declares. Installing and requiring it does.
+      - name: Install and require it, with nothing else present
+        run: |
+          mkdir -p /tmp/consumer && cd /tmp/consumer
+          gem install "$GITHUB_WORKSPACE"/docker-api-ng-*.gem --no-document
+          ruby -e 'require "docker/api"; puts "loaded #{Docker::API::VERSION}"'
+
+      # The same again through Bundler, which is how nearly everyone consumes
+      # it -- and which is stricter, because a bundled gem that is not in the
+      # Gemfile is not on the load path even though Ruby ships it.
+      - name: Require it from a Gemfile that declares nothing else
+        run: |
+          mkdir -p /tmp/bundled && cd /tmp/bundled
+          gem install "$GITHUB_WORKSPACE"/docker-api-ng-*.gem --no-document
+          printf 'source "https://rubygems.org"\ngem "docker-api-ng"\n' > Gemfile
+          bundle install --local
+          bundle exec ruby -e 'require "docker/api"; puts "loaded #{Docker::API::VERSION}"'
+
+      # A smoke test rather than a suite: the whole request path, driven through
+      # the scripted transport the gem ships for exactly this purpose.
+      - name: Drive the installed gem end to end
+        run: |
+          cd /tmp/consumer
+          ruby -e '
+            require "docker/api"
+            body = %q({"Id":"abc","Name":"/web"})
+            fake = Docker::API::Transport::Fake.new([
+              "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n" \
+              "Content-Length: #{body.bytesize}\r\n\r\n#{body}"
+            ])
+            client = Docker::API::Client.new(transport: fake, api_version: "1.55")
+            name = client.containers.get("web").name
+            raise "expected web, got #{name.inspect}" unless name == "web"
+            puts "end to end: ok"
+          '
