@@ -90,24 +90,21 @@ module Docker
       # @param detach_keys [String, nil] the key sequence that detaches
       # @return [self]
       def start(detach_keys: nil)
-        operations.container_start(id: id, detach_keys: detach_keys)
-        mark_stale
+        idempotently { operations.container_start(id: id, detach_keys: detach_keys) }
       end
 
       # @param timeout [Integer, nil] seconds to wait before killing
       # @param signal [String, nil] the signal to send first
       # @return [self]
       def stop(timeout: nil, signal: nil)
-        operations.container_stop(id: id, t: timeout, signal: signal)
-        mark_stale
+        idempotently { operations.container_stop(id: id, t: timeout, signal: signal) }
       end
 
       # @param timeout [Integer, nil] seconds to wait before killing
       # @param signal [String, nil] the signal to send first
       # @return [self]
       def restart(timeout: nil, signal: nil)
-        operations.container_restart(id: id, t: timeout, signal: signal)
-        mark_stale
+        idempotently { operations.container_restart(id: id, t: timeout, signal: signal) }
       end
 
       # @param signal [String, nil] the signal to send, SIGKILL by default
@@ -182,7 +179,11 @@ module Docker
       # @return [String, self] the log, or self when a block was given
       def logs(follow: false, stdout: true, stderr: true, tail: nil,
         since: nil, timestamps: false, &block)
-        collected = { stdout: +"", stderr: +"" }
+        # Defaulted rather than fixed keys: Demultiplexer maps a frame id it
+        # does not recognise to :unknown, and a fixed two-key hash turned that
+        # into `undefined method '<<' for nil` -- one corrupt frame crashing a
+        # log read, with a bare NoMethodError rather than a Docker::API::Error.
+        collected = Hash.new { |streams, name| streams[name] = +"" }
         sink = block || ->(stream, chunk) { collected[stream] << chunk }
         decoder = tty? ? Stream::Raw.new { |chunk| sink.call(:stdout, chunk) } : Stream::Demultiplexer.new(&sink)
 
@@ -227,7 +228,11 @@ module Docker
 
         ExecResult.new(
           stdout: stdout, stderr: stderr,
-          exit_code: operations.exec_inspect(id: exec_id).json["ExitCode"].to_i
+          # Not .to_i. The daemon reports "ExitCode": null while an exec is
+          # still being reaped, and nil.to_i is 0 -- so a command whose result
+          # was not yet known reported success, and #success? agreed. nil
+          # travels through instead, and #success? is false for it.
+          exit_code: operations.exec_inspect(id: exec_id).json["ExitCode"]
         )
       end
 
@@ -297,6 +302,27 @@ module Docker
       end
 
       private
+
+      # Run a lifecycle change that Docker treats as idempotent.
+      #
+      # The daemon answers 304 for "already started" and "already stopped", and
+      # the generated layer faithfully raises NotModified for it -- correct
+      # there, where fidelity to the specification is the point. It is the
+      # wrong default here: converge loops, retry-until-healthy blocks and test
+      # fixtures all call start on a container that may already be running, and
+      # asking for a state the container is already in is not a failure.
+      #
+      # Marked stale either way. Rescuing without it left a caller who did
+      # handle the exception holding a payload the daemon had already moved on
+      # from.
+      #
+      # @return [self]
+      def idempotently
+        yield
+        mark_stale
+      rescue NotModified
+        mark_stale
+      end
 
       # @return [String] the id of the created exec instance
       def create_exec(command, env, user, working_dir, tty, privileged)
