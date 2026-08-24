@@ -21,6 +21,6 @@ group :cookstyle do
 end
 
 group :types do
-  gem "rbs", "~> 3.4"
+  gem "rbs", "~> 4.0"
   gem "steep", "~> 1.6"
 end
