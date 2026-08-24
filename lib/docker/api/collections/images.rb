@@ -89,7 +89,10 @@ module Docker
           x_registry_auth: credentials
         ) { |chunk| stream << chunk if stream }
 
-        get(tag.to_s.empty? ? repo : "#{repo}:#{tag}", platform: platform)
+        # Reassembled rather than reusing the caller's string, because the tag
+        # may have been defaulted to "latest" along the way -- and because a
+        # digest has to go back together with "@" rather than ":".
+        get(Image.join_reference(repo, tag), platform: platform)
       end
 
       # Build an image.
