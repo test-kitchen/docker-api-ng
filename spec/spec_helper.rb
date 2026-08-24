@@ -23,6 +23,14 @@ if ENV["COVERAGE"]
   end
 end
 
+# Specs read request bytes back through CGI.unescape. Required here rather than
+# left to a transitive load: cgi was arriving via mocha, which nothing declared
+# and which mocha 3 stopped doing -- turning a routine dependency bump into 115
+# "uninitialized constant CGI" errors across five spec files.
+#
+# The generated conformance suite emits its own require for the same reason.
+require "cgi"
+
 require "minitest/autorun"
 require "mocha/minitest"
 
