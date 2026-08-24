@@ -33,11 +33,23 @@ module Docker
         # @raise [Docker::API::ConnectionError]
         def connect
           dial("https://#{host}:#{port}") do
-            socket = OpenSSL::SSL::SSLSocket.new(super_socket, ssl_context)
-            socket.hostname = host # SNI, which some proxies in front of a daemon require
-            socket.sync_close = true
-            socket.connect
-            socket
+            # The raw socket is closed by hand if anything between here and a
+            # completed handshake raises. sync_close only ties the two together
+            # once an SSLSocket exists and owns it, so an expired certificate,
+            # a hostname mismatch or an untrusted CA used to leave the
+            # descriptor open until GC got to it -- and a retry loop waiting for
+            # a daemon to come up exhausts descriptors rather than failing.
+            raw = super_socket
+            begin
+              socket = OpenSSL::SSL::SSLSocket.new(raw, ssl_context)
+              socket.hostname = host # SNI, which some proxies in front of a daemon require
+              socket.sync_close = true
+              socket.connect
+              socket
+            rescue StandardError
+              raw.close unless raw.closed?
+              raise
+            end
           end
         end
 

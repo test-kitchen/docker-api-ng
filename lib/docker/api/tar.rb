@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 require "rubygems/package" unless defined?(Gem::Package)
+require "tempfile" unless defined?(Tempfile)
 
 module Docker
   module API
@@ -18,10 +19,17 @@ module Docker
 
       # Pack a directory into an uncompressed tar archive.
       #
+      # Written to a temporary file rather than a String. A build context is
+      # whatever the caller points at -- a Rails application with its assets, a
+      # monorepo subtree, a directory holding a model checkpoint -- and holding
+      # the whole archive in memory to send it costs its full size again on top
+      # of what the daemon is about to receive. The connection layer streams an
+      # IO body chunked, so the archive never has to be resident at all.
+      #
       # @param directory [String] the build context root
       # @param ignore [Array<String>, nil] patterns to exclude. Read from the
       #   context's .dockerignore when not given.
-      # @return [StringIO] the archive, rewound and ready to send
+      # @return [File] the archive, rewound and ready to send
       #
       # @example
       #   Tar.pack_directory("./app")
@@ -30,12 +38,18 @@ module Docker
         raise ArgumentError, "build context #{directory} is not a directory" unless File.directory?(root)
 
         patterns = ignore || read_dockerignore(root)
-        buffer = StringIO.new(+"".b)
+        buffer = Tempfile.new(["docker-api-ng-context", ".tar"])
+        buffer.binmode
 
-        Gem::Package::TarWriter.new(buffer) do |tar|
-          each_entry(root, patterns) do |absolute, relative|
-            add_entry(tar, absolute, relative)
+        begin
+          Gem::Package::TarWriter.new(buffer) do |tar|
+            each_entry(root, patterns) do |absolute, relative|
+              add_entry(tar, absolute, relative)
+            end
           end
+        rescue StandardError
+          buffer.close!
+          raise
         end
 
         buffer.rewind

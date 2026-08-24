@@ -28,6 +28,7 @@ describe "loading with nothing but Ruby" do
     rubygems/package
     socket
     stringio
+    tempfile
     uri
   }.freeze
 
