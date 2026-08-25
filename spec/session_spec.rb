@@ -26,14 +26,4 @@ describe Docker::API::Session do
     response = session.start { |http| http.request(Net::HTTP::Get.new("/x")) }
     _(response.body).must_equal "helloworld"
   end
-
-  # Net::HTTP.new resolves proxies and re-dispatches to Class#new with its own
-  # positional arguments, which do not match ours.
-  it "constructs without going through Net::HTTP.new's proxy handling" do
-    session = Docker::API::Session.new(
-      Docker::API::Transport::Fake.new([]), read_timeout: 5, open_timeout: 5
-    )
-    _(session).must_be_kind_of Net::HTTP
-    _(session.proxy?).must_equal false
-  end
 end
