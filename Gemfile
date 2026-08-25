@@ -22,5 +22,5 @@ end
 
 group :types do
   gem "rbs", "~> 3.4"
-  gem "steep", "~> 1.6"
+  gem "steep", "~> 2.0"
 end
