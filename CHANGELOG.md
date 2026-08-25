@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1](https://github.com/test-kitchen/docker-api-ng/compare/v0.3.0...v0.3.1) (2026-08-25)
+
+
+### Bug Fixes
+
+* **test:** remove specs that cannot fail, and fix one whose name lied ([#30](https://github.com/test-kitchen/docker-api-ng/issues/30)) ([fc0118d](https://github.com/test-kitchen/docker-api-ng/commit/fc0118d27304049e6f705e7d01326fad59224efb))
+
 ## [0.3.0](https://github.com/test-kitchen/docker-api-ng/compare/v0.2.0...v0.3.0) (2026-08-24)
 
 
